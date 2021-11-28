@@ -10,67 +10,67 @@ let remoteStream;
 let pc;
 
 let pcConfig = {
-    'iceServers': [{
-        'urls': 'stun:stun.l.google.com:19302'
-      }]
+  'iceServers': [{
+    'urls': 'stun:stun1.l.google.com:19302'
+  }]
 }
 
 let room = 'foo';
 
 let socket = io.connect();
 
-  if(room !==''){
-    socket.emit('create or join',room);
-    console.log('Attempted to create or join Room',room);
-  }
+if (room !== '') {
+  socket.emit('create or join', room);
+  console.log('Attempted to create or join Room', room);
+}
 
-socket.on('created', (room,id)=>{
-  console.log('Created room' + room+'socket ID : '+id);
-  isInitiator= true;
+socket.on('created', (room, id) => {
+  console.log('Created room' + room + 'socket ID : ' + id);
+  isInitiator = true;
 })
 
-socket.on('full', room=>{
-  console.log('Room '+room+'is full');
+socket.on('full', room => {
+  console.log('Room ' + room + 'is full');
 });
 
-socket.on('join',room=>{
+socket.on('join', room => {
   console.log('Another peer made a request to join room' + room);
   console.log('This peer is the initiator of room' + room + '!');
   isChannelReady = true;
 })
 
-socket.on('joined',room=>{
-  console.log('joined : '+ room );
-  isChannelReady= true;
+socket.on('joined', room => {
+  console.log('joined : ' + room);
+  isChannelReady = true;
 })
-socket.on('log', array=>{
-  console.log.apply(console,array);
+socket.on('log', array => {
+  console.log.apply(console, array);
 });
 
-socket.on('message', (message)=>{
-  console.log('Client received message :',message);
-  if(message === 'got user media'){
+socket.on('message', (message) => {
+  console.log('Client received message :', message);
+  if (message === 'got user media') {
     maybeStart();
-  }else if(message.type === 'offer'){
-    if(!isInitiator && !isStarted){
+  } else if (message.type === 'offer') {
+    if (!isInitiator && !isStarted) {
       maybeStart();
     }
     pc.setRemoteDescription(new RTCSessionDescription(message));
     doAnswer();
-  }else if(message.type ==='answer' && isStarted){
+  } else if (message.type === 'answer' && isStarted) {
     pc.setRemoteDescription(new RTCSessionDescription(message));
-  }else if(message.type ==='candidate' &&isStarted){
+  } else if (message.type === 'candidate' && isStarted) {
     const candidate = new RTCIceCandidate({
-      sdpMLineIndex : message.label,
-      candidate:message.candidate
+      sdpMLineIndex: message.label,
+      candidate: message.candidate
     });
 
     pc.addIceCandidate(candidate);
   }
 })
-function sendMessage(message){
-  console.log('Client sending message: ',message);
-  socket.emit('message',message);
+function sendMessage(message) {
+  console.log('Client sending message: ', message);
+  socket.emit('message', message);
 }
 
 navigator.mediaDevices
@@ -122,7 +122,7 @@ function handleCreateOfferError(event) {
 }
 
 function handleRemoteStreamAdded(event) {
-  console.log("remote stream added");
+  console.log("remote stream added", event);
   remoteStream = event.stream;
   remoteVideo.srcObject = remoteStream;
 }
@@ -138,7 +138,7 @@ function maybeStart() {
     if (isInitiator) {
       doCall();
     }
-  }else{
+  } else {
     console.error('maybeStart not Started!');
   }
 }

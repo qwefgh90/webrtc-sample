@@ -1,12 +1,18 @@
-const http = require('http');
+const https = require('https');
 const os = require('os');
 const socketIO = require('socket.io');
 const nodeStatic = require('node-static');
+const fs = require('fs');
+
+const options = {
+    key: fs.readFileSync('../cert/webrtc.com.key.pem'),
+    cert: fs.readFileSync('../cert/webrtc.com.crt.pem'),
+}
 
 let fileServer = new(nodeStatic.Server)();
-let app = http.createServer((req,res)=>{
+let app = https.createServer(options, (req,res)=>{
     fileServer.serve(req,res);
-}).listen(8080);
+}).listen(8887);
 
 let io = socketIO.listen(app);
 io.sockets.on('connection',socket=>{
@@ -34,7 +40,7 @@ io.sockets.on('connection',socket=>{
         }
         else if(numClients===1){
             console.log('join room!');
-            log('Client Id' + socket.id + 'joined room' + room);
+            log('Client Id' + socket.id + ' joined room' + room);
             io.sockets.in(room).emit('join',room);
             socket.join(room);
             socket.emit('joined',room,socket.id);
