@@ -24,8 +24,8 @@ if (room !== '') {
   console.log('Attempted to create or join Room', room);
 }
 
-socket.on('created', (room, id) => {
-  console.log('Created room' + room + 'socket ID : ' + id);
+socket.on('owned', (room, id) => {
+  console.log(`I am a creator (${id}) on this ${room}`);
   isInitiator = true;
 })
 
@@ -33,7 +33,7 @@ socket.on('full', room => {
   console.log('Room ' + room + 'is full');
 });
 
-socket.on('join', room => {
+socket.on('notify', room => {
   console.log('Another peer made a request to join room' + room);
   console.log('This peer is the initiator of room' + room + '!');
   isChannelReady = true;
@@ -43,12 +43,12 @@ socket.on('joined', room => {
   console.log('joined : ' + room);
   isChannelReady = true;
 })
-socket.on('log', array => {
-  console.log.apply(console, array);
+socket.on('log', msg => {
+  console.log(msg);
 });
 
 socket.on('message', (message) => {
-  console.log('Client received message :', message);
+  console.log('I have just received ', message);
   if (message === 'got user media') {
     maybeStart();
   } else if (message.type === 'offer') {
@@ -69,7 +69,7 @@ socket.on('message', (message) => {
   }
 })
 function sendMessage(message) {
-  console.log('Client sending message: ', message);
+  console.log('A new message is being sent: ', message);
   socket.emit('message', message);
 }
 
@@ -93,7 +93,7 @@ function gotStream(stream) {
 
 function createPeerConnection() {
   try {
-    pc = new RTCPeerConnection(null);
+    pc = new RTCPeerConnection(pcConfig);
     pc.onicecandidate = handleIceCandidate;
     pc.onaddstream = handleRemoteStreamAdded;
     console.log("Created RTCPeerConnection");
